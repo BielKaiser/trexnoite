@@ -1,6 +1,6 @@
-var aumento
 var pontos2 = 0
 var contador = 0
+var contador1 = 0;
 var ponto
 var morte,pulo,check
 var gameover,restart
@@ -9,8 +9,10 @@ var pass,passImg,passColl
 var demo
 var cac1,cac2,cac3,cac4,cac5,cac6
 var nuvem,nuvemImg
-var hora
 var solo,soloImagem,soloInv;
+let hora;
+var troca = "dia"
+var modo = "play";
 var trex ,trex_running,trex_collided,trexnight,trexnight_running,trexnight_ducking,trexnight_collided;
 function preload(){
 
@@ -45,31 +47,33 @@ function preload(){
 }
 
 function setup(){
-  createCanvas(900,200)
+  createCanvas(windowWidth,windowHeight)
   gpCac = new Group()
   gpNuv = new Group()
   gpPas = new Group()
   //crie um sprite de trex
-  trex = createSprite(50,100,20,50);
+  trex = createSprite(50,height/2-50,20,50);
   trex.addAnimation("running", trex_running);
   trex.addAnimation("ducking",trex_ducking);
   trex.addAnimation("collided",trex_collided);
   trex.addAnimation("night_running",trexnight_running);
   trex.addAnimation("night_ducking",trexnight_ducking);
   trex.addAnimation("night_collided",trexnight_collided);
-  trex.scale = 0.6;
+  //trex.scale = 0.6;
   trex.setCollider("circle",0,0,40);
   trex.debug = false
-  solo = createSprite(300,150);
-  solo.addImage("solo",soloImagem);
-  soloInv = createSprite(300,160,600,15);
-  soloInv.visible = false;
 
-  overgame = createSprite(500,50)
+  
+  solo = createSprite(width/2,height/2,width,15);
+  solo.addImage("solo",soloImagem);
+  soloInv = createSprite(width/2,height/2+10,width,15);
+  soloInv.visible = false;
+  solo.scale = 1.53
+  overgame = createSprite(width/2,height/2 -150)
   overgame.addImage("acabou",gameover);
   overgame.visible = false
   
-  startre = createSprite(500,100)
+  startre = createSprite(width/2,height/2-100)
   startre.addImage("recomeco",restart)
   startre.scale = 0.6
   startre.visible = false
@@ -77,84 +81,109 @@ function setup(){
   ponto = 0
   tempo = World.seconds
   
-  pass = createSprite(1000,50)
+  pass = createSprite(width+100,50)
   pass.addAnimation("passaro",passImg);
+  pass.addAnimation("colidido",passColl)
 
-  aumento = 160
-  cacto = createSprite(1000,130,50,50);
-  cacto.velocityX = -4
-  cacto.addImage(cac1);
-  gpCac.add(cacto)
+  
+  
 }
 
 function draw(){
-
+  hora = hour();
 
   trex.velocityY += 0.3;
-  trex.collide(soloInv);
   
   background("white"); 
-
   drawSprites();
-  
+
+
+
+//modo = play
   if (modo=="play"){
-    if (solo.x<0)
-  {solo.x=solo.width/2;
-}  
-     if (frameCount%60==0){
-  ponto = ponto + 50 
-} 
+
+ //reiniciar solo
+  if (solo.x<0){
+    solo.x=solo.width/2;
+  }  
+
+  if(contador==0){
+    cacto = createSprite(width,height/2-23,50,50);
+    cacto.velocityX = -4
+    cacto.addImage(cac1);
+    gpCac.add(cacto)
+    contador=1;
+  }
+
+ //contagem pontos
+  if (frameCount%60==0){
+    ponto = ponto + 50 
+  } 
+
+//som checkpoint
       if (ponto%1000==0){
         if (ponto>0){
-  
-  
-  check.play()
-  ponto=ponto+50
+          check.play()
+          ponto=ponto+50
+      }
+    }
 
-}
-}
+    // texto da pontuação
   strokeWeight(1);
   stroke(rgb(46,46,46));
   fill(rgb(51,51,51));
   textSize (20)
-  text ("SCORE: "+ponto,760,20) ;
+  text ("SCORE: "+ponto,width-150,20) ;
 
-  solo.velocityX = -5;
+  //velocidade solo
+  solo.velocityX = cacto.velocityX;
   
+  // criar grupos
   criarNuvem ()
   criarCacto ()
   criarPassaro()
-  hora = hour()
-  if (hour>=6 && hora<=9){
-   trex.changeAnimation("running") 
-   if (keyDown("down")){
-      trex.changeAnimation("ducking")
-      trex.scale = 0.4
-      trex.y = trex.y + 5
-}
-      else{
-      trex.changeAnimation("running")  
-      trex.scale = 0.6
-}   
-      console.log("entrou dia")
-}     else {
-  trex.changeAnimation("night_running")
+  
+  // trex noite ou dia
+  if (hora>6 && hora <21){
+     trex.changeAnimation("running")  
+     troca = "dia"
+
   if (keyDown("down")){
-    trex.changeAnimation("night_ducking")
+    trex.changeAnimation("ducking")
     trex.scale = 0.4
     trex.y = trex.y + 5
-}
+  }
     else{
-    trex.changeAnimation("night_running")  
+    trex.changeAnimation("running")  
     trex.scale = 0.6
-}
+  }
        
+    }
+
+
+    else{
+
+trex.changeAnimation("night_running");  
+
+troca = "noite";
+
     
-    console.log("entrou noite")
+if (keyDown("down")){
+  trex.changeAnimation("night_ducking")
+  trex.scale = 0.4
+  trex.y = trex.y + 5
+}
+  else{
+  trex.changeAnimation("night_running")  
+  trex.scale = 0.4
+  trex.setCollider ("rectangle") 
 }
 
+    }
 
-  
+    
+
+  // morte
 
   if (trex.isTouching(gpCac) || trex.isTouching(gpPas)){
   modo = "gameover"  
@@ -162,32 +191,41 @@ function draw(){
 
 }
   
-  if (keyDown("SPACE")){ 
+//trex pula 
+
+  if (trex.collide(soloInv) && keyDown("SPACE")){ 
   
-  if (trex.y>=124){ 
+     
   pulo.play()
-  trex.velocityY = -8;
-}   
-}
-  if (keyDown("down")){
-  trex.changeAnimation("ducking")
-  trex.scale = 0.4
-  trex.y = trex.y + 5
-}
-  else{
-  trex.changeAnimation("running")  
-  trex.scale = 0.6
-}
-}
+   trex.velocityY = -8;
+        
+  }
+
+} // fim modo = play
+
+
+// modo = gameover
   if (modo=="gameover"){
   trex.velocityY = 0
   solo.velocityX = 0
   gpCac.setVelocityXEach(0);
   gpNuv.setVelocityXEach(0);
   gpPas.setVelocityXEach(0);
-  trex.changeAnimation("collided");
-  trex.scale = 0.6
-  pass.changeAnimation("colidido");
+  trex.collide(soloInv)
+  if(troca=="noite"){
+    trex.changeAnimation("night_collided");
+    trex.scale = 0.4
+  }
+  else{
+    trex.changeAnimation("collided");
+   trex.scale = 0.6
+  }
+  
+ 
+  if(pass){
+    pass.changeAnimation("colidido");
+  }
+  
   gpCac.setLifetimeEach(-1)
   gpNuv.setLifetimeEach(-1)
   gpPas.setLifetimeEach(-1)
@@ -197,14 +235,17 @@ function draw(){
  
   if (mousePressedOver(startre)){
   modo="play"
+  gpCac.setVelocityXEach(0);
   gpCac.destroyEach();
   gpNuv.destroyEach();
   gpPas.destroyEach();  
   startre.visible=false
   overgame.visible=false
   ponto=0
-  aumento=160
-  contador=0
+
+  
+  contador=0;
+
 } 
 }
 }
@@ -221,25 +262,21 @@ if (frameCount%80==0){
 
   trex.depth = 3 
 
-  nuvem.lifetime = 250
+  nuvem.lifetime = 1000
   gpNuv.add (nuvem)
   }
   }
   function criarCacto(){
   if (cacto.x<=450){  
   
-  cacto = createSprite(1000,130,50,50);
-  if (contador==0){
+  cacto = createSprite(width,height/2-20,50,50);
+
+  if (contador1==0){
   cacto.velocityX = -4
-  contador=1
+  contador1=1
 }
   else{
-  cacto.velocityX = -7*ponto/500  
-  if (aumento>10){
-  aumento=aumento-1
-
-
-}
+  cacto.velocityX = -4 + (ponto/500)
 }
 
 
@@ -274,17 +311,17 @@ function criarPassaro(){
   
   if (frameCount%400==0){ 
   
-  pass = createSprite(1000,50)
+  pass = createSprite(width+100,height/2-100)
   pass.addAnimation("passaro",passImg);
   pass.scale = 0.85
-  pass.velocityX = -0
+  pass.velocityX = -6
   pass.setCollider("rectangle",0,0,60,40)
   pass.debug = false
-  pass.lifetime = 250
+  pass.lifetime = 600
   gpPas.add (pass)
   pass.addAnimation("colidido",passColl)
   pass.depth = 2
+  pass.y = Math.round(random(height/2-100,height/2))
 }
 }
 var modo = "play"
-
