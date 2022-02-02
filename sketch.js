@@ -9,6 +9,7 @@ var pass,passImg,passColl
 var demo
 var cac1,cac2,cac3,cac4,cac5,cac6
 var nuvem,nuvemImg
+var hora
 var solo,soloImagem,soloInv;
 var trex ,trex_running,trex_collided,trexnight,trexnight_running,trexnight_ducking,trexnight_collided;
 function preload(){
@@ -97,14 +98,14 @@ function draw(){
   drawSprites();
   
   if (modo=="play"){
-  if (solo.x<0)
+    if (solo.x<0)
   {solo.x=solo.width/2;
 }  
-  if (frameCount%60==0){
+     if (frameCount%60==0){
   ponto = ponto + 50 
 } 
-  if (ponto%1000==0){
-  if (ponto>0){
+      if (ponto%1000==0){
+        if (ponto>0){
   
   
   check.play()
@@ -123,21 +124,36 @@ function draw(){
   criarNuvem ()
   criarCacto ()
   criarPassaro()
-  
-  if (ponto%100==0){
-    if (keyDown("down")){
-      trex.changeAnimation("night_ducking")
+  hora = hour()
+  if (hour>=6 && hora<=9){
+   trex.changeAnimation("running") 
+   if (keyDown("down")){
+      trex.changeAnimation("ducking")
       trex.scale = 0.4
       trex.y = trex.y + 5
 }
       else{
-      trex.changeAnimation("night_running")  
+      trex.changeAnimation("running")  
       trex.scale = 0.6
+}   
+      console.log("entrou dia")
+}     else {
+  trex.changeAnimation("night_running")
+  if (keyDown("down")){
+    trex.changeAnimation("night_ducking")
+    trex.scale = 0.4
+    trex.y = trex.y + 5
 }
-      trex.changeAnimation("night_running")   
-      
-      console.log("entrou")
+    else{
+    trex.changeAnimation("night_running")  
+    trex.scale = 0.6
 }
+       
+    
+    console.log("entrou noite")
+}
+
+
   
 
   if (trex.isTouching(gpCac) || trex.isTouching(gpPas)){
